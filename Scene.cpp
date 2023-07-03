@@ -626,7 +626,8 @@ Scene::Scene(std::string name, IT3File it3_p, IT3File it3_m, MTBFile mtb) {
 				key_animation scl_bp(m_d.start, { scal.x,scal.y,scal.z, 0 });
 
 				if (current_chunk.kan7) {
-
+					/*if (current_chunk.info->text_id1.compare("Bone_root") == 0)
+						std::cout << "test";*/
 					std::vector<key_animation> keys_t = {};
 					std::vector<key_animation> keys_r = {};
 					std::vector<key_animation> keys_s = {};

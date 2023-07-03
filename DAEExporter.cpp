@@ -400,11 +400,6 @@ void DAEExporter::ExportScene(Scene scene){
 			std::vector<aiVectorKey> position_keys;
 			std::vector<aiQuatKey> rotation_keys;
 			std::vector<aiVectorKey> scaling_keys;
-
-
-			aiVector3D a, b;
-			aiQuaternion q;
-			current_node->mTransformation.Decompose(b, q, a);
 			for (unsigned int i = 0; i < keys.positions.size(); i++) {
 				int tick = keys.positions[i].tick;
 				if (tick < ani_.second.start)
@@ -436,10 +431,10 @@ void DAEExporter::ExportScene(Scene scene){
 
 				auto k_r = aiQuaternion(keys.rotations[i].data.t, keys.rotations[i].data.x, keys.rotations[i].data.y, keys.rotations[i].data.z); //posi - pos_bp;
 				
-				k_r = k_r.Normalize();
-				//k_r = k_r.Conjugate();
+																																				 //k_r = k_r.Conjugate();
 				rotation_keys.push_back(aiQuatKey(tick / ani->mTicksPerSecond - ani_.second.start / ani->mTicksPerSecond, k_r));
-				
+				/*if (current_bone.compare("Bone_root") == 0)
+					std::cout << (tick / ani->mTicksPerSecond - ani_.second.start / ani->mTicksPerSecond) << " " << k_r.x << " " << k_r.y << " " << k_r.z << " " << k_r.w << std::endl;*/
 			}
 				
 			
