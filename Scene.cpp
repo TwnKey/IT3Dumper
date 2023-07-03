@@ -722,9 +722,13 @@ Scene::Scene(std::string name, IT3File it3_p, IT3File it3_m, MTBFile mtb) {
 								aiMatrix4x4 matz = create_transform_from_trs(vz, aiVector3D(0, 0, 0), aiVector3D(1, 1, 1));
 
 								aiMatrix4x4 matr = maty * matz * matx ;
-								if (ibms.count(current_chunk.info->text_id1) == 0)
-									throw std::exception("pas d'inverse bind matrix?");
-								aiMatrix4x4 ibm = ibms[current_chunk.info->text_id1];
+								aiMatrix4x4 ibm;
+								if (ibms.count(current_chunk.info->text_id1) == 0) {}
+									//eventuellement la calculer??
+								else
+									ibm = ibms[current_chunk.info->text_id1];
+
+									//throw std::exception("pas d'inverse bind matrix?");
 								matr = ibm * matr;
 
 								//vector4<float> v = top_fun({ vec.x, vec.y, vec.z }, key_r.unit);
