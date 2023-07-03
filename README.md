@@ -1,4 +1,9 @@
+
+
 # IT3Dumper
+
+![ys9](https://github.com/TwnKey/IT3Dumper/assets/69110695/828020e6-6840-4f1f-8580-5d16f062920d)
+
 This tool reads IT3 files from falcom games using the Yamaneko engine (or, at least Ys VIII and IX are supported) and extracts models along their textures.
 It is the first tool to my knowledge that allows extracting animations to be reused in other games, but as it is experimental some problems could occur, and expect manual fix to be necessary.
 # Current state
