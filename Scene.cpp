@@ -282,6 +282,9 @@ vector4<float> top_fun(vector3<float> fs, unsigned int variant) {
 	return res;
 }
 
+
+
+
 Scene::Scene(std::string name, IT3File it3_p, IT3File it3_m, MTBFile mtb) {
 	this->name = name;
 	it3_p.add_kan7_from_m_file(it3_m);
@@ -709,7 +712,7 @@ Scene::Scene(std::string name, IT3File it3_p, IT3File it3_m, MTBFile mtb) {
 							case 5:
 							case 6: {
 								vector3<float> vec;
-
+							
 								vec.x = key_r.data.x * 2 * AI_MATH_PI / 360;
 								vec.y = key_r.data.y * 2 * AI_MATH_PI / 360;
 								vec.z = key_r.data.z * 2 * AI_MATH_PI / 360;
@@ -717,25 +720,30 @@ Scene::Scene(std::string name, IT3File it3_p, IT3File it3_m, MTBFile mtb) {
 								aiQuaternion vz(0, vec.z, 0);
 								aiQuaternion vx(0, 0, vec.x);
 
-								aiMatrix4x4 matx = create_transform_from_trs(vx, aiVector3D(0, 0, 0), aiVector3D(1, 1, 1));
-								aiMatrix4x4 maty = create_transform_from_trs(vy, aiVector3D(0, 0, 0), aiVector3D(1, 1, 1));
-								aiMatrix4x4 matz = create_transform_from_trs(vz, aiVector3D(0, 0, 0), aiVector3D(1, 1, 1));
+								
+								aiQuaternion res = vx * vz * vy;
 
-								aiMatrix4x4 matr = maty * matz * matx ;
-								aiMatrix4x4 ibm;
-								if (ibms.count(current_chunk.info->text_id1) == 0) {}
-									//eventuellement la calculer??
-								else
-									ibm = ibms[current_chunk.info->text_id1];
-
-									//throw std::exception("pas d'inverse bind matrix?");
-								matr = ibm * matr;
-
-								//vector4<float> v = top_fun({ vec.x, vec.y, vec.z }, key_r.unit);
-								aiQuaternion res;
+								aiQuaternion r;
 								aiVector3D p, s;// (vec.x, vec.y, vec.z); //xyz = non ; yxz = non; zyx = non; yzx = non; xzy = non; zxy = ??
+
+								aiMatrix4x4 matr = create_transform_from_trs(res, aiVector3D(0, 0, 0), aiVector3D(1, 1, 1));
+								
+								aiMatrix4x4 matres;
+								if (current_chunk.jntv != NULL) {
+
+									auto v = current_chunk.jntv->v0;
+									aiQuaternion vyj(v.y, 0, 0);
+									aiQuaternion vzj(0, v.z, 0);
+									aiQuaternion vxj(0, 0, v.x);
+									aiQuaternion vres =  vxj * vzj * vyj;
+									matres = create_transform_from_trs(vres, aiVector3D(0, 0, 0), aiVector3D(1, 1, 1));
+								}
+								else {
+								
+								}
+								matr = matres * matr;
 								matr.Decompose(s, res, p);
-								res = qua * res;
+								res = res;
 								
 
 								aiVector3D test_p;

@@ -145,7 +145,7 @@ void chunk::output_data(std::string scene_folder) {
 		/*if (vpax)
 			vpax->output_data(info->text_id1, scene_folder);
 		if (kan7)
-			kan7->output_data(info->text_id1, scene_folder);*/
+			kan7->output_data(info->text_id1, scene_folder); */
 	}
 }
 
