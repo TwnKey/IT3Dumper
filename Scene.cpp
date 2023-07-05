@@ -605,7 +605,7 @@ Scene::Scene(std::string name, IT3File it3_p, IT3File it3_m, MTBFile mtb) {
 		else{
 			motion_data m_d = mtb.data[ani_name];
 			//if (m_d.start <= m_d.end) break;
-			animation ani(m_d.name, m_d.duration, 24, m_d.end);
+			animation ani(m_d.name, m_d.end - m_d.start, 24, m_d.end);
 
 
 			unsigned int bone_chunk_id = 0;
@@ -668,10 +668,18 @@ Scene::Scene(std::string name, IT3File it3_p, IT3File it3_m, MTBFile mtb) {
 
 
 					if (first_t != current_chunk.kan7->kans[0].rend())
-						keys_t = std::vector<key_animation>((first_t + 1).base(), last_t);
+						keys_t = std::vector<key_animation>((first_t + 1).base(), (last_t + 1));
 					if (first_r != current_chunk.kan7->kans[1].rend())
-						keys_r = std::vector<key_animation>((first_r + 1).base(), last_r);
-					
+						keys_r = std::vector<key_animation>((first_r + 1).base(), (last_r+1));
+					/*if (keys_r.size() > 0) {
+							std::cout << "last r " << keys_r[keys_r.size()-1].tick << " " << m_d.end << " " << current_chunk.kan7->kans[1][current_chunk.kan7->kans[1].size() - 1].tick  << std::endl;
+						
+					}
+					if (keys_t.size() > 0) {
+						std::cout << "last t " << keys_t[keys_t.size() - 1].tick << " " << m_d.end << " " << current_chunk.kan7->kans[0][current_chunk.kan7->kans[0].size() - 1].tick << std::endl;
+
+
+					}*/
 					if (keys_t.size() == 0) {
 						auto first_t = std::find_if(current_chunk.kan7->kans[0].rbegin(), current_chunk.kan7->kans[0].rend(),
 							[m_d](key_animation kan) { return kan.tick <= m_d.start; });

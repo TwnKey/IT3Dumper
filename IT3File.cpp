@@ -67,6 +67,9 @@ IT3File::IT3File(const std::vector<uint8_t>& file_content)
 		case VPAX_ID:
 			current_chunk.vpax = new VPAX(file_content, current_addr, current_chunk.info->text_id1, 1);
 			break;
+		case VPA9_ID:
+			current_chunk.vpax = new VPAX(file_content, current_addr, current_chunk.info->text_id1, 1);
+			break;
 		case VP11_ID:
 			current_chunk.vpax = new VPAX(file_content, current_addr, current_chunk.info->text_id1, 2);
 			break;

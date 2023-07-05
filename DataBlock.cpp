@@ -106,7 +106,32 @@ for (size_t idx = 0; idx < mat.v0.x; idx++) {
 return result;
 }
 
+std::vector<DataBlock> read_DataBlocksVPA9(const std::vector<uint8_t>& file_content, unsigned int& addr) {
+	std::vector<DataBlock> result;
+	BlockDesc mat = read_data<BlockDesc>(file_content, addr);
 
+	//if type == 8, second method has to be applied
+
+	for (size_t idx = 0; idx < mat.v0.x; idx++) {
+		size_t count = read_data<uint32_t>(file_content, addr);
+		size_t size_0 = read_data<uint32_t>(file_content, addr);
+		unsigned int type = read_data<unsigned int>(file_content, addr);
+
+
+		if (type == 8) {
+
+
+			result.push_back(DataBlock(file_content, addr, count - 4, true, mat));
+
+
+		}
+		else
+		{
+			result.push_back(DataBlock(file_content, addr, count - 4, false, mat));
+		}
+	}
+	return result;
+}
 
 
 INFO::INFO(const std::vector<uint8_t> &file_content, unsigned int &addr, size_t size) {

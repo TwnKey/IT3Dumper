@@ -21,6 +21,7 @@ enum identifier {
 	IDAT_ID = 0x54414449,
 	IEND_ID = 0x444E4549,
 	VPAX_ID = 0x58415056,
+	VPA9_ID = 0x39415056,
 	VPAC_ID = 0x43415056,
 	TEX2_ID = 0x32584554,
 	IHAS_ID = 0x53414849,
@@ -40,7 +41,6 @@ struct BlockDesc {
 	vector4<int> v0; 
 
 };
-
 class DataBlock { //6b7057
 public:
 	std::vector<uint8_t> content;
