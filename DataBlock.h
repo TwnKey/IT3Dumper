@@ -44,15 +44,14 @@ struct BlockDesc {
 class DataBlock { //6b7057
 public:
 	std::vector<uint8_t> content;
-	BlockDesc caracs;
-
+	
 
 	DataBlock() = default;
 
-	bool is_compressed;
+	unsigned int compression;
 
 
-	DataBlock(const std::vector<uint8_t> &file_content, unsigned int &addr, size_t sz, bool compressed, BlockDesc caracs);
+	DataBlock(const std::vector<uint8_t> &file_content, unsigned int &addr, size_t sz, unsigned int compressed);
 
 	void output_data(std::string node_name, std::string scene_folder);
 

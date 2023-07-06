@@ -2,7 +2,7 @@
 #include "utilities.h"
 #include <fstream>
 #include <iostream>
-#include "DAEExporter.h"
+#include "FBXExporter.h"
 #include "MTBFile.h"
 #include <DirectXTex/DirectXTex.h>
 //no idea what it is
@@ -30,11 +30,10 @@ size_t get_something(size_t id) {
 
 
 
-DataBlock::DataBlock(const std::vector<uint8_t> &file_content, unsigned int &addr, size_t sz, bool compressed, BlockDesc caracs) {
-	this->is_compressed = compressed;
-	this->caracs = caracs;
+DataBlock::DataBlock(const std::vector<uint8_t> &file_content, unsigned int &addr, size_t sz, unsigned int compressed) {
+	this->compression = compressed;
 
-	if (compressed) {
+	if (compressed == 1) {
 
 		unsigned int start = addr;
 		//MATM 6dd4f0
@@ -62,7 +61,7 @@ DataBlock::DataBlock(const std::vector<uint8_t> &file_content, unsigned int &add
 			}
 		}
 	}
-	else {
+	else if (compression == 0){
 		std::vector<uint8_t> el = std::vector<uint8_t>(sz);
 		content.insert(content.end(), file_content.begin() + addr, file_content.begin() + addr + sz);
 		addr = addr + sz;
@@ -77,62 +76,358 @@ void DataBlock::output_data(std::string node_name, std::string scene_folder) {
 	OutFile.close();
 }
 
+unsigned int FUN_140407870(const std::vector<uint8_t>& file_content, uint32_t& addr, uint8_t &some_counter, unsigned int &second_byte) {
 
+	unsigned int cVar4 = some_counter;
+	if (cVar4 == 0) {
+		second_byte = read_data<uint16_t>(file_content, addr);
+		some_counter = 16;
+		cVar4 = some_counter;
+	}
+	unsigned int uVar2 = second_byte;
+	some_counter = cVar4 + -1;
+	second_byte = uVar2 >> 1;
+	return uVar2 & 1;
+}
+unsigned int bruh(const std::vector<uint8_t>& file_content, uint32_t& addr, uint8_t& some_counter, unsigned int& second_byte) {
+	unsigned int param_2 = 3;
+	unsigned int uVar4 = 0;
+	if (param_2 != 0) {
+		uint8_t cVar3 = some_counter;
+		do {
+			if (cVar3 == 0) {
+				second_byte = read_data<uint16_t>(file_content, addr);
+				some_counter = 16;
+				cVar3 = some_counter;
+			}
+			cVar3 = cVar3 + -1;
+			some_counter = cVar3;
+			uVar4 = uVar4 * 2 + (second_byte & 1);
+			second_byte = second_byte >> 1;
+			param_2 = param_2 + -1;
+		} while (param_2 != 0);
+	}
+	return uVar4 & 0xffff;
+}
+//I literally have no energy left to try understanding it
+DataBlock WhoLetFalcomCook(const std::vector<uint8_t>& file_content, uint32_t &addr, size_t sz, unsigned int compression) {
+	DataBlock result;
+	uint8_t some_counter = 8;
+	addr++;//Skipping first byte for no reason
+	unsigned int second_byte = file_content[addr++];
+	uint8_t uVar10;
+	unsigned int uVar15;
+	unsigned int uVar12;
+	unsigned int iVar9;
+	unsigned int uVar2;
+	unsigned int uVar14;
+	unsigned int uVar13 = 0;
+	unsigned int uVar4;
+	unsigned int uVar5;
+	bool skip = false;
+	do {
+		while (true) {
+			while (true) {
+				uVar10 = some_counter;
+				if (uVar10 == 0) {
+					some_counter = 16;
+					second_byte = read_data<uint16_t>(file_content, addr);
+					uVar10 = some_counter;
+				}
+				uVar15 = second_byte;
+				some_counter+=0xFF;
+				uVar10 = some_counter;
+				uVar12 = uVar15 >> 1;
+				second_byte = uVar12;
+				if ((uVar15 & 1) != 0) break;
+				result.content.push_back(read_data<uint8_t>(file_content, addr));
+				uVar13 = uVar13 + 1;
+			}
+			//std::cout << std::hex << addr << " " << (unsigned int) some_counter << " " << (unsigned int) second_byte <<  std::endl;
+			
+			if (uVar10 == 0) {//Les deux premiers sont bons, mais 2ad5 n'est pas bon ça devrait être 2ACB
+				second_byte = read_data<uint16_t>(file_content, addr);
+				some_counter = 16;
+				uVar12 = second_byte;
+				uVar10 = some_counter;
+			}
+			uVar10 = uVar10 + 0xff;
+			uVar15 = uVar12 >> 1;
+			second_byte = uVar15;
+			some_counter = uVar10;
+			if ((uVar12 & 1) == 0) { break; }
+			if (uVar10 == 0) {
+				second_byte = read_data<uint16_t>(file_content, addr);
+				some_counter = 16;
+				uVar10 = some_counter;
+				uVar15 = second_byte;
+			}
+			uVar12 = uVar15 >> 1;
+			second_byte = uVar12;
+			some_counter = uVar10 + 0xff;
+			if ((uint8_t)(uVar10 + 0xff) == 0) {
+				second_byte = read_data<uint16_t>(file_content, addr);
+				some_counter = 16;
+				uVar12 = second_byte;
+			}
+			second_byte = uVar12 >> 1;
+			some_counter = some_counter + 0xff;
+			if (some_counter == 0) {
+				second_byte = read_data<uint16_t>(file_content, addr);
+				some_counter = 16;
+			}
+			uVar14 = second_byte;
+			second_byte = uVar14 >> 1;
+			some_counter = some_counter + 0xff;
+			if (some_counter == 0) {
+				second_byte = read_data<uint16_t>(file_content, addr);
+				some_counter = 16;
+			}
+			uVar4 = second_byte;
+			second_byte = uVar4 >> 1;
+			some_counter = some_counter + 0xff;
+			if (some_counter == 0) {
+				second_byte = read_data<uint16_t>(file_content, addr);
+				some_counter = 16;
 
-std::vector<DataBlock> read_DataBlocks(const std::vector<uint8_t> &file_content, unsigned int &addr) {
+			}
+			uVar5 = second_byte;
+			second_byte = uVar5 >> 1;
+			some_counter = some_counter + 0xff;
+			uVar15 = ((uVar5 & 1) +
+				((uVar4 & 1) + ((uVar14 & 1) + ((uVar12 & 1) + (uVar15 & 1) * 2) * 2) * 2) * 2) *
+				0x100 + read_data<uint8_t>(file_content, addr);
+
+			if (uVar15 == 0) {
+				return result;
+			}
+			skip = false;
+			if (uVar15 == 1) {
+				uVar10 = some_counter;
+				if (uVar10 == 0) {
+					second_byte = read_data<uint16_t>(file_content, addr);
+					some_counter = 16;
+					uVar10 = some_counter;
+				}
+				uVar15 = second_byte;
+				uVar10 = uVar10 + 0xff;
+				some_counter = uVar10;
+				uVar12 = uVar15 >> 1;
+				second_byte = uVar12;
+				if ((uVar15 & 1) == 0) {
+					if (uVar10 == 0) {
+						second_byte = read_data<uint16_t>(file_content, addr);
+						some_counter = 16;
+						uVar10 = some_counter;
+						uVar12 = second_byte;
+					}
+					uVar15 = uVar12 >> 1;
+					second_byte = uVar15;
+					some_counter = uVar10 + 0xff;
+					if ((uint8_t)(uVar10 + 0xff) == 0) {
+						second_byte = read_data<uint16_t>(file_content, addr);
+						some_counter = 16;
+						uVar15 = second_byte;
+					}
+					second_byte = uVar15 >> 1;
+					some_counter = some_counter + 0xff;
+					if (some_counter == 0) {
+						second_byte = read_data<uint16_t>(file_content, addr);
+						some_counter = 16;
+					}
+					uVar14 = second_byte;
+					second_byte = uVar14 >> 1;
+					some_counter = some_counter + 0xff;
+					if (some_counter == 0) {
+						second_byte = read_data<uint16_t>(file_content, addr);
+						some_counter = 16;
+					}
+					uVar4 = second_byte;
+					second_byte = uVar4 >> 1;
+					some_counter = some_counter + 0xff;
+					iVar9 = ((uVar14 & 1) + ((uVar15 & 1) + (uVar12 & 1) * 2) * 2) * 2 + (uVar4 & 1);
+				}
+				else {
+					if (uVar10 == 0) {
+						second_byte = read_data<uint16_t>(file_content, addr);
+						some_counter = 16;
+						uVar10 = some_counter;
+						uVar12 = second_byte;
+					}
+					uVar15 = uVar12 >> 1;
+					second_byte = uVar15;
+					some_counter = uVar10 + 0xff;
+					if ((uint8_t)(uVar10 + 0xff) == 0) {
+						second_byte = read_data<uint16_t>(file_content, addr);
+						some_counter = 16;
+						uVar15 = second_byte;
+					}
+					second_byte = uVar15 >> 1;
+					some_counter = some_counter + 0xff;
+					if (some_counter == 0) {
+						second_byte = read_data<uint16_t>(file_content, addr);
+						some_counter = 16;
+					}
+					uVar14 = second_byte;
+					second_byte = uVar14 >> 1;
+					some_counter = some_counter + 0xff;
+					if (some_counter == 0) {
+						second_byte = read_data<uint16_t>(file_content, addr);
+						some_counter = 16;
+					}
+					uVar4 = second_byte;
+					second_byte = uVar4 >> 1;
+					some_counter = some_counter + 0xff;
+					unsigned int bVar3 = read_data<uint8_t>(file_content, addr);
+					iVar9 = (((uVar14 & 1) + ((uVar15 & 1) + (uVar12 & 1) * 2) * 2) * 2 + (uVar4 & 1)) * 0x100 + bVar3;
+				}
+				uVar15 = iVar9 + 0xe;
+				uVar2 = read_data<uint8_t>(file_content, addr);
+				for (unsigned int i = 0; i < uVar15; i++) {
+					result.content.push_back(uVar2);
+				}
+				uVar13 = uVar13 + uVar15;
+				//FUN_140531190(puVar17, uVar2, uVar15);
+				/*puVar17 = puVar17 + uVar15;
+				*/
+				
+			}
+			else { skip = true;  break; }
+			
+		}
+		if (skip) { skip = false; }
+		else{
+			uVar15 = read_data<uint8_t>(file_content, addr);
+			
+		}
+		uVar10 = some_counter;
+		if (uVar10 == 0) {
+			second_byte = read_data<uint16_t>(file_content, addr);
+			some_counter = 16;
+			uVar10 = some_counter;
+		}
+		uVar12 = second_byte;
+		uVar10 = uVar10 + 0xff;
+		some_counter = uVar10;
+		uVar14 = uVar12 >> 1;
+		second_byte = uVar14;
+		if ((uVar12 & 1) == 0) {
+			if (uVar10 == 0) {
+				second_byte = read_data<uint16_t>(file_content, addr);
+				some_counter = 16;
+				uVar14 = second_byte;
+				uVar10 = some_counter;
+			}
+			uVar10 = uVar10 + 0xff;
+			uVar12 = uVar14 >> 1;
+			second_byte = uVar12;
+			some_counter = uVar10;
+			if ((uVar14 & 1) == 0) {
+				if (uVar10 == '\0') {
+					second_byte = read_data<uint16_t>(file_content, addr);
+					some_counter = 16;
+					uVar12 = second_byte;
+					uVar10 = some_counter;
+				}
+				second_byte = uVar12 >> 1;
+				some_counter = uVar10 + 0xff;
+				if ((uVar12 & 1) == 0) {
+					
+					iVar9 = FUN_140407870(file_content, addr, some_counter, second_byte);
+					if (iVar9 == 0) {
+						iVar9 = FUN_140407870(file_content, addr, some_counter, second_byte);
+						if (iVar9 == 0) {
+							unsigned int bVar3 = read_data<uint8_t>(file_content, addr);
+							uVar12 = bVar3 + 0xe;
+						}
+						else {
+							iVar9 = bruh(file_content, addr, some_counter, second_byte);
+							uVar12 = iVar9 + 6;
+						}
+					}
+					else {
+						uVar12 = 5;
+					}
+				}
+				else {
+					uVar12 = 4;
+				}
+			}
+			else {
+				uVar12 = 3;
+			}
+		}
+		else {
+			uVar12 = 2;
+		}
+		uVar14 = uVar13 + uVar12;
+		/*if ((0x3fff0 < uVar14) || (param_1->some_size1 < uVar14)) {
+			throw std::exception("");
+		}*/
+		unsigned int idx_current_ptr = result.content.size() + - (int)uVar15;
+		unsigned long long uVar16 = uVar12;
+		if (uVar12 < 0) {
+			uVar16 = 0;
+		}
+		unsigned int uVar11 = 0;
+		uVar13 = uVar14;
+		if (uVar16 != 0) {
+			do {
+				uVar2 = result.content[idx_current_ptr];
+				idx_current_ptr++;
+				result.content.push_back(uVar2);
+				//unsigned int uVar2 = read_data<uint8_t>(file_content, addr);
+				uVar11 = uVar11 + 1;
+			} while (uVar11 < uVar16);
+		}
+	} while (true);
+	return result;
+}
+
+std::vector<DataBlock> read_DataBlocks(const std::vector<uint8_t> &file_content, unsigned int &addr, unsigned int ver, size_t mysterious_number) {
 std::vector<DataBlock> result;
-BlockDesc mat = read_data<BlockDesc>(file_content, addr);
 
-//if type == 8, second method has to be applied
-
-for (size_t idx = 0; idx < mat.v0.x; idx++) {
-	size_t count = read_data<uint32_t>(file_content, addr);
-	size_t size_0 = read_data<uint32_t>(file_content, addr);
-	unsigned int type = read_data<unsigned int>(file_content, addr);
-	
-
-	if (type == 8) {
-
-
-		result.push_back(DataBlock(file_content, addr, count - 4, true, mat));
-
-
-	}
-	else
-	{
-		result.push_back(DataBlock(file_content, addr, count - 4, false, mat));
-	}
-}
-return result;
-}
-
-std::vector<DataBlock> read_DataBlocksVPA9(const std::vector<uint8_t>& file_content, unsigned int& addr) {
-	std::vector<DataBlock> result;
-	BlockDesc mat = read_data<BlockDesc>(file_content, addr);
-
-	//if type == 8, second method has to be applied
-
-	for (size_t idx = 0; idx < mat.v0.x; idx++) {
+if (ver == 1) {
+	unsigned int x = read_data<unsigned int>(file_content, addr);
+	unsigned int y = read_data<unsigned int>(file_content, addr);
+	unsigned int z = read_data<unsigned int>(file_content, addr);
+	unsigned int t = read_data<unsigned int>(file_content, addr);
+	for (size_t idx = 0; idx < x; idx++) {
 		size_t count = read_data<uint32_t>(file_content, addr);
 		size_t size_0 = read_data<uint32_t>(file_content, addr);
 		unsigned int type = read_data<unsigned int>(file_content, addr);
-
-
 		if (type == 8) {
 
 
-			result.push_back(DataBlock(file_content, addr, count - 4, true, mat));
+			result.push_back(DataBlock(file_content, addr, count - 4, 1));
 
 
 		}
 		else
 		{
-			result.push_back(DataBlock(file_content, addr, count - 4, false, mat));
+			result.push_back(DataBlock(file_content, addr, count - 4, 0));
 		}
 	}
-	return result;
 }
-
+else {
+	uint32_t i, d, k;
+	unsigned int x = read_data<unsigned int>(file_content, addr);
+	unsigned int y = read_data<unsigned int>(file_content, addr);
+	size_t tot = x;
+	while (tot > 0){
+		uint16_t count = read_data<uint16_t>(file_content, addr);
+		result.push_back(WhoLetFalcomCook(file_content, addr, count - 4, 2));
+		tot = tot - result[result.size() - 1].content.size();
+		if (tot > 0)
+			uint8_t b = read_data<uint8_t>(file_content, addr);
+	}
+	i = read_data<unsigned int>(file_content, addr);
+	d = read_data<unsigned int>(file_content, addr);
+	
+	
+}
+return result;
+}
 
 INFO::INFO(const std::vector<uint8_t> &file_content, unsigned int &addr, size_t size) {
 	unsigned int start_addr = addr;
@@ -270,8 +565,13 @@ MAT6::MAT6(const std::vector<uint8_t> &file_content, unsigned int &addr, size_t 
 
 	for (unsigned int idx = 0; idx < count; idx++) {
 		int0s.push_back(read_data<int>(file_content, addr));
-
-		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr);
+		unsigned int flags = read_data<int>(file_content, addr);
+		unsigned int ver = 0;
+		if ((flags & 0x80000000) != 0) 
+			ver = 1;
+		else 
+			ver = 2;
+		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr, ver, count);
 		matm.insert(matm.end(), chks.begin(), chks.end()); //le 4 est hardcodé
 
 	}
@@ -370,7 +670,13 @@ BON3::BON3(const std::vector<uint8_t> &file_content, unsigned int &addr, size_t 
 	std::vector <DataBlock> matm;
 
 	for (unsigned int idx = 0; idx < 3; idx++) {
-		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr);
+		unsigned int flags = read_data<int>(file_content, addr);
+		unsigned int ver = 0;
+		if ((flags & 0x80000000) != 0)
+			ver = 1;
+		else
+			ver = 2;
+		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr,ver, 1);
 		matm.insert(matm.end(), chks.begin(), chks.end());
 	}
 	matms = matm;
@@ -483,15 +789,26 @@ ITP::ITP(const std::vector<uint8_t> &file_content, unsigned int &addr, std::stri
 
 					unsigned int int0 = read_data<unsigned int>(file_content, addr);
 					unsigned int int1 = read_data<unsigned int>(file_content, addr);
-					std::vector<DataBlock> chks = read_DataBlocks(file_content, addr);
+					unsigned int flags = read_data<int>(file_content, addr);
+					unsigned int ver = 0;
+					if ((flags & 0x80000000) != 0)
+						ver = 1;
+					else
+						ver = 2;
+					std::vector<DataBlock> chks = read_DataBlocks(file_content, addr,ver,1);
 					for (auto chk : chks)
 						content.insert(content.end(), chk.content.begin(), chk.content.end());
 
 				}
 				else {
 					if ((hdr.type == 1) || (hdr.type == 2) || (hdr.type == 3)) {
-
-						std::vector<DataBlock> DataBlocks = read_DataBlocks(file_content, addr);
+						unsigned int flags = read_data<int>(file_content, addr);
+						unsigned int ver = 0;
+						if ((flags & 0x80000000) != 0)
+							ver = 1;
+						else
+							ver = 2;
+						std::vector<DataBlock> DataBlocks = read_DataBlocks(file_content, addr, ver,1);
 						for (auto chk : DataBlocks)
 							content.insert(content.end(), chk.content.begin(), chk.content.end());
 					}
@@ -718,24 +1035,52 @@ VPAX::VPAX(const std::vector<uint8_t> &file_content, unsigned int &addr, std::st
 
 	this->content_indexes.resize(count);
 	this->content_vertices.resize(count);
-	
-	for (unsigned int idx = 0; idx < count; idx++) {
-		size_t sz = read_data<uint32_t>(file_content, addr); 
-		std::vector<DataBlock> DataBlocks = read_DataBlocks(file_content, addr);
-		for (auto chk : DataBlocks) {
-			content_vertices[idx].insert(content_vertices[idx].end(), chk.content.begin(), chk.content.end());
-		}
-			
-	}
+	std::vector<DataBlock> DataBlocks;
 	
 	for (unsigned int idx = 0; idx < count; idx++) {
 		size_t sz = read_data<uint32_t>(file_content, addr);
-		std::vector<DataBlock> DataBlocks = read_DataBlocks(file_content, addr);
-		for (auto chk : DataBlocks) {
-			content_indexes[idx].insert(content_indexes[idx].end(), chk.content.begin(), chk.content.end());
+		unsigned int flags = read_data<uint32_t>(file_content, addr);
+		if ((flags & 0x80000000) != 0) {
+			DataBlocks = read_DataBlocks(file_content, addr, 1, count);
+			for (auto chk : DataBlocks) {
+				content_vertices[idx].insert(content_vertices[idx].end(), chk.content.begin(), chk.content.end());
+			}
 		}
+		else {
 			
+			DataBlocks = read_DataBlocks(file_content, addr, 2, count);
+			for (auto chk : DataBlocks) {
+				content_vertices[idx].insert(content_vertices[idx].end(), chk.content.begin(), chk.content.end());
+			}
+		}
 	}
+	
+	
+	
+	
+	
+	for (unsigned int idx = 0; idx < count; idx++) {
+		size_t sz = read_data<uint32_t>(file_content, addr);
+		unsigned int flags = read_data<uint32_t>(file_content, addr);
+		if ((flags & 0x80000000) != 0) {
+			DataBlocks = read_DataBlocks(file_content, addr, 1, count);
+			for (auto chk : DataBlocks) {
+				content_indexes[idx].insert(content_indexes[idx].end(), chk.content.begin(), chk.content.end());
+			}
+		}
+		else {
+			
+			DataBlocks = read_DataBlocks(file_content, addr, 2, count);
+			for (auto chk : DataBlocks) {
+				content_indexes[idx].insert(content_indexes[idx].end(), chk.content.begin(), chk.content.end());
+			}
+			std::fstream file;
+			file.open("test.bin", std::ios::app | std::ios::binary);
+			file.write(reinterpret_cast<char*>(content_indexes[idx].data()), content_indexes[idx].size() * sizeof(uint8_t));
+			file.close();
+		}
+	}
+	
 	//Now to retrieve vertices and indexes
 
 
@@ -854,28 +1199,58 @@ KAN7::KAN7(const std::vector<uint8_t>& file_content, unsigned int& addr, size_t 
 	
 	if (things[0] > 0){
 		unsigned int uint0 = read_data<unsigned int>(file_content, addr);
-		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr);
+		unsigned int flags = read_data<int>(file_content, addr);
+		unsigned int ver = 0;
+		if ((flags & 0x80000000) != 0)
+			ver = 1;
+		else
+			ver = 2;
+		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr, ver,1);
 		matms.push_back(chks);
 	}
 	if (things[1] > 0) {
 		//std::cout << std::hex << "K 1 " << addr << std::endl;
 		unsigned int uint1 = read_data<unsigned int>(file_content, addr);
-		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr);
+		unsigned int flags = read_data<int>(file_content, addr);
+		unsigned int ver = 0;
+		if ((flags & 0x80000000) != 0)
+			ver = 1;
+		else
+			ver = 2;
+		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr, ver, 1);
 		matms.push_back(chks);
 	}
 	if (things[2] > 0) {
 		unsigned int uint2 = read_data<unsigned int>(file_content, addr);
-		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr);
+		unsigned int flags = read_data<int>(file_content, addr);
+		unsigned int ver = 0;
+		if ((flags & 0x80000000) != 0)
+			ver = 1;
+		else
+			ver = 2;
+		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr, ver, 1);
 		matms.push_back(chks);
 	}
 	if (things[3] > 0) {
 		unsigned int uint3 = read_data<unsigned int>(file_content, addr);
-		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr);
+		unsigned int flags = read_data<int>(file_content, addr);
+		unsigned int ver = 0;
+		if ((flags & 0x80000000) != 0)
+			ver = 1;
+		else
+			ver = 2;
+		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr, ver, 1);
 		matms.push_back(chks);
 	}
 	if (things[4] > 0) {
 		unsigned int uint4 = read_data<unsigned int>(file_content, addr);
-		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr);
+		unsigned int flags = read_data<int>(file_content, addr);
+		unsigned int ver = 0;
+		if ((flags & 0x80000000) != 0)
+			ver = 1;
+		else
+			ver = 2;
+		std::vector<DataBlock> chks = read_DataBlocks(file_content, addr, ver, 1);
 		matms.push_back(chks);
 	}
 	unsigned int count_block = 1;

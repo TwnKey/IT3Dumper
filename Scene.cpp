@@ -635,42 +635,64 @@ Scene::Scene(std::string name, IT3File it3_p, IT3File it3_m, MTBFile mtb) {
 					std::vector<key_animation> keys_r = {};
 					std::vector<key_animation> keys_s = {};
 
-					auto first_t = std::find_if(current_chunk.kan7->kans[0].rbegin(), current_chunk.kan7->kans[0].rend(),
+					auto first_t_r = std::find_if(current_chunk.kan7->kans[0].rbegin(), current_chunk.kan7->kans[0].rend(),
 						[m_d](key_animation kan) { return kan.tick <= m_d.start; });
+					auto first_t = current_chunk.kan7->kans[0].end();
+					if (first_t_r != current_chunk.kan7->kans[0].rend())
+						first_t = (first_t_r + 1).base();
+
 					auto last_t = std::find_if(current_chunk.kan7->kans[0].begin(), current_chunk.kan7->kans[0].end(),
 						[m_d](key_animation kan) { return kan.tick >= m_d.end; });
 
-					auto first_r = std::find_if(current_chunk.kan7->kans[1].rbegin(), current_chunk.kan7->kans[1].rend(),
-						[m_d](key_animation kan) { return kan.tick <= m_d.start; });
-					auto last_r = std::find_if(current_chunk.kan7->kans[1].begin(), current_chunk.kan7->kans[1].end(),
-						[m_d](key_animation kan) { return kan.tick >= m_d.end; });
-					if (current_chunk.kan7->kans.size() > 2){
-						auto first_s = std::find_if(current_chunk.kan7->kans[2].rbegin(), current_chunk.kan7->kans[2].rend(),
-							[m_d](key_animation kan) { return kan.tick <= m_d.start; });
-						auto last_s = std::find_if(current_chunk.kan7->kans[2].begin(), current_chunk.kan7->kans[2].end(),
-							[m_d](key_animation kan) { return kan.tick >= m_d.end; });
-						if (first_s != current_chunk.kan7->kans[2].rend())
-							keys_s = std::vector<key_animation>((first_s + 1).base(), last_s);
-
-						if (keys_s.size() == 0) {
-							auto first_s = std::find_if(current_chunk.kan7->kans[2].rbegin(), current_chunk.kan7->kans[2].rend(),
-								[m_d](key_animation kan) { return kan.tick <= m_d.start; });
-							auto last_s = std::find_if(current_chunk.kan7->kans[2].begin(), current_chunk.kan7->kans[2].end(),
-								[m_d](key_animation kan) { return kan.tick >= m_d.end; });
-							if ((first_s) != current_chunk.kan7->kans[2].rend()) {
-								keys_s.push_back(*(first_s));
-							}
-							if ((last_s) != current_chunk.kan7->kans[2].end()) {
-								keys_s.push_back(*(last_s));
-							}
-						}
+					if (first_t == current_chunk.kan7->kans[0].end() && (last_t != current_chunk.kan7->kans[0].end())) {
+						first_t = last_t;
+					}
+					else if (first_t != current_chunk.kan7->kans[0].end() && (last_t == current_chunk.kan7->kans[0].end())) {
+						last_t = first_t;
 					}
 
 
-					if (first_t != current_chunk.kan7->kans[0].rend())
-						keys_t = std::vector<key_animation>((first_t + 1).base(), (last_t + 1));
-					if (first_r != current_chunk.kan7->kans[1].rend())
-						keys_r = std::vector<key_animation>((first_r + 1).base(), (last_r+1));
+					auto first_r_r = std::find_if(current_chunk.kan7->kans[1].rbegin(), current_chunk.kan7->kans[1].rend(),
+						[m_d](key_animation kan) { return kan.tick <= m_d.start; });
+					auto first_r = current_chunk.kan7->kans[1].end();
+					if (first_r_r != current_chunk.kan7->kans[1].rend())
+						first_r = (first_r_r + 1).base();
+
+					auto last_r = std::find_if(current_chunk.kan7->kans[1].begin(), current_chunk.kan7->kans[1].end(),
+						[m_d](key_animation kan) { return kan.tick >= m_d.end; });
+
+					if (first_r == current_chunk.kan7->kans[1].end() && (last_r != current_chunk.kan7->kans[1].end())) {
+						first_r = last_r;
+					}
+					else if (first_r != current_chunk.kan7->kans[1].end() && (last_r== current_chunk.kan7->kans[1].end())) {
+						last_r = first_r;
+					}
+
+					if (current_chunk.kan7->kans.size() > 2){
+						auto first_s_r = std::find_if(current_chunk.kan7->kans[2].rbegin(), current_chunk.kan7->kans[2].rend(),
+							[m_d](key_animation kan) { return kan.tick <= m_d.start; });
+						auto first_s = current_chunk.kan7->kans[2].end();
+						if (first_s_r != current_chunk.kan7->kans[2].rend())
+							first_s = (first_s_r + 1).base();
+
+						auto last_s = std::find_if(current_chunk.kan7->kans[2].begin(), current_chunk.kan7->kans[2].end(),
+							[m_d](key_animation kan) { return kan.tick >= m_d.end; });
+
+						if (first_s == current_chunk.kan7->kans[2].end() && (last_s != current_chunk.kan7->kans[2].end())) {
+							first_s = last_s;
+						}
+						else if (first_s != current_chunk.kan7->kans[2].end() && (last_s == current_chunk.kan7->kans[2].end())) {
+							last_s = first_s;
+						}
+
+
+						keys_s = std::vector<key_animation>(first_s, last_s + 1);
+
+					}
+
+
+					keys_t = std::vector<key_animation>(first_t, (last_t + 1));
+					keys_r = std::vector<key_animation>(first_r, (last_r + 1));
 					/*if (keys_r.size() > 0) {
 							std::cout << "last r " << keys_r[keys_r.size()-1].tick << " " << m_d.end << " " << current_chunk.kan7->kans[1][current_chunk.kan7->kans[1].size() - 1].tick  << std::endl;
 						
@@ -680,32 +702,7 @@ Scene::Scene(std::string name, IT3File it3_p, IT3File it3_m, MTBFile mtb) {
 
 
 					}*/
-					if (keys_t.size() == 0) {
-						auto first_t = std::find_if(current_chunk.kan7->kans[0].rbegin(), current_chunk.kan7->kans[0].rend(),
-							[m_d](key_animation kan) { return kan.tick <= m_d.start; });
-						auto last_t = std::find_if(current_chunk.kan7->kans[0].begin(), current_chunk.kan7->kans[0].end(),
-							[m_d](key_animation kan) { return kan.tick >= m_d.end; });
-						if ((first_t) != current_chunk.kan7->kans[0].rend()) {
-							keys_t.push_back(*(first_t));
-
-						}
-						if ((last_t) != current_chunk.kan7->kans[0].end()) {
-							keys_t.push_back(*(last_t));
-
-						}
-					}
-					if (keys_r.size() == 0) {
-						auto first_r = std::find_if(current_chunk.kan7->kans[1].rbegin(), current_chunk.kan7->kans[1].rend(),
-							[m_d](key_animation kan) { return kan.tick <= m_d.start; });
-						auto last_r = std::find_if(current_chunk.kan7->kans[1].begin(), current_chunk.kan7->kans[1].end(),
-							[m_d](key_animation kan) { return kan.tick >= m_d.end; });
-						if ((first_r) != current_chunk.kan7->kans[1].rend()) {
-							keys_r.push_back(*(first_r));
-						}
-						if ((last_r) != current_chunk.kan7->kans[1].end()) {
-							keys_r.push_back(*(last_r));
-						}
-					}
+					
 					
 
 

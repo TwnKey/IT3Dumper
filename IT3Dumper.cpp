@@ -7,7 +7,7 @@
 #include <vector>
 #include "IT3File.h"
 #include <string>
-#include "DAEExporter.h"
+#include "FBXExporter.h"
 #include "MTBFile.h"
 #include <filesystem>
 
@@ -34,8 +34,8 @@ int main(int argc, char ** argv)
 			it3.output_data(scene_name);
 			Scene sc(scene_name, it3, IT3File(), MTBFile());
 
-			DAEExporter dae_exp;
-			dae_exp.ExportScene(sc);
+			FBXExporter fbx_exp;
+			fbx_exp.ExportScene(sc);
 
 		}
 	
@@ -55,8 +55,8 @@ int main(int argc, char ** argv)
 			it3.output_data(scene_name);
 			Scene sc(scene_name, it3, IT3File(), mtb_f);
 		
-			DAEExporter dae_exp;
-			dae_exp.ExportScene(sc);
+			FBXExporter fbx_exp;
+			fbx_exp.ExportScene(sc);
 		}
 
 
@@ -83,8 +83,8 @@ int main(int argc, char ** argv)
 			it3.output_data(scene_name);
 			Scene sc(scene_name, it3, it3_m, mtb_f);
 		
-			DAEExporter dae_exp;
-			dae_exp.ExportScene(sc);
+			FBXExporter fbx_exp;
+			fbx_exp.ExportScene(sc);
 		}
 	}
 	
