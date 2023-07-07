@@ -1,8 +1,9 @@
 
 
 # IT3Dumper
+![dana1](https://github.com/TwnKey/IT3Dumper/assets/69110695/83e080a7-b339-411e-98d4-ba369e2fed51)
 
-![ys9](https://github.com/TwnKey/IT3Dumper/assets/69110695/828020e6-6840-4f1f-8580-5d16f062920d)
+
 
 This tool reads IT3 files from falcom games using the Yamaneko engine (or, at least Ys VIII and IX are supported) and extracts models along their textures.
 It is the first tool to my knowledge that allows extracting animations to be reused in other games, but as it is experimental some problems could occur, and expect manual fix to be necessary.
@@ -12,6 +13,8 @@ It is the first tool to my knowledge that allows extracting animations to be reu
 - UV maps (Not perfect)
 - Materials (Not really)
 - Animations (~OK)
+
+Note that it also should support the VPA9 chunk that exists for some DLCs. If you have some problem please contact me.
 # Instructions
 First run the following command:  
   
@@ -27,7 +30,6 @@ When running the same command as above:
 
   
 and having "exported_animations.txt" in your working directory, the animations contained in "exported_animations.txt" (and only them) will be extracted and put inside the .fbx.  
-![image](https://github.com/TwnKey/IT3Dumper/assets/69110695/4a9bc0b6-37bc-4a13-bdb2-b35f8f021ed1)
 
 # Known problems
 While most animations should be working, some need a manual fix. Some have a gimbal lock problem due to assimp converting the quaternions back to euler. I don't know if that's a requirement for the FBX file format but whatever the reason it is retarded.
