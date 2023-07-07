@@ -261,7 +261,7 @@ public:
 };
 
 struct IHDR {
-	unsigned int int0, dim1, dim2, compressed_size;
+	unsigned int int0, dim2, dim1, compressed_size;
 	uint16_t s1, bpp, s3, s4, type, s6;
 	int not_used;
 };

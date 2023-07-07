@@ -957,7 +957,7 @@ unsigned int Morton(unsigned int t, size_t sx, size_t sy)
 }
 
 
-void ITP::unswizzle(size_t width, size_t height, size_t blockSize)
+void ITP::unswizzle(size_t height, size_t width, size_t blockSize)
 {
 	std::vector<uint8_t> result = std::vector<uint8_t>(this->content);
 	size_t heightTexels = height / 4;
